@@ -1,34 +1,35 @@
 version: '3.8'
 
 services:
-  # --- SERVIÇO 1: APLICAÇÃO (API) ---
-  api:
-    build: .
-    container_name: api_container
-    ports:
-      - '3000:3000'
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
-    environment:
-      DATABASE_URL: postgres://user_aula:senha_aula@db:5432/crud_db?schema=public
-    depends_on:
-      - db
-    command: pnpm run dev
-
-  # --- SERVIÇO 2: BANCO DE DADOS ---
+  # --- SERVIÇO DE BANCO DE DADOS ---
   db:
     image: postgres:15-alpine
-    container_name: db_container
+    container_name: crud_postgres
     restart: always
     environment:
-      POSTGRES_USER: user_aula
-      POSTGRES_PASSWORD: senha_aula
-      POSTGRES_DB: crud_db
+      POSTGRES_USER: docker
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: crud_api
     ports:
       - '5432:5432'
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
+
+  # --- SERVIÇO DA API ---
+  api:
+    build: .
+    container_name: crud_api
+    restart: always
+    ports:
+      - '3001:3001'
+    environment:
+      DATABASE_URL: postgresql://docker:docker@db:5432/crud_api?schema=public
+      PORT: 3001
+    depends_on:
+      - db
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
 
 volumes:
-  pg_data:
+  pgdata:
